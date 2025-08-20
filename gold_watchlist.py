@@ -20,7 +20,9 @@ def get_gold_usd_oz(api_key):
     params = {'api_key': api_key, 'base': 'USD', 'currencies': 'XAU'}
     try:
         resp = requests.get(GOLD_API_URL, params=params)
-        resp.raise_for_status()  # Raise an exception for bad status codes
+        print(f"Gold API Status Code: {resp.status_code}")
+        print(f"Gold API Response: {resp.text}")
+        resp.raise_for_status()
         data = resp.json()
         return data['rates']['XAU']
     except requests.exceptions.RequestException as e:
@@ -36,9 +38,14 @@ def get_usd_inr_rate(access_key):
     params = {'access_key': access_key, 'currencies': 'INR', 'source': 'USD'}
     try:
         resp = requests.get(USD_INR_API, params=params)
+        print(f"USD/INR API Status Code: {resp.status_code}")
+        print(f"USD/INR API Response: {resp.text}")
         resp.raise_for_status()
         data = resp.json()
-        # The key for INR is now USDINR based on the documentation
+        if not data["success"]:
+            print("API call was not successful.")
+            print("API response:", data)
+            return None
         return data["quotes"]["USDINR"]
     except requests.exceptions.RequestException as e:
         print(f"Error fetching USD/INR rate: {e}")

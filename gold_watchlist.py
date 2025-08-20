@@ -51,5 +51,5 @@ def run_and_update():
     df.to_csv(CSV_PATH, index=False)
     print("Watchlist updated:", row)
 
-if _name_ == "_main_":
+if __name__ == "_main_":
     run_and_update()

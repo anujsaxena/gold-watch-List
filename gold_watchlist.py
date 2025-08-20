@@ -1,6 +1,6 @@
 import requests
 import pandas as pd
-from datetime import datetime
+from datetime import datetime, timezone
 import os
 import sys
 
@@ -12,20 +12,20 @@ GRAMS_PER_OZ = 31.1034768
 CSV_PATH = "gold_watchlist.csv"
 
 # API Endpoints
-# Note: These API URLs require an API key to work correctly.
-GOLD_API_KEY = "https://api.metalpriceapi.com/v1/latest"
+GOLD_API_URL = "https://api.metalpriceapi.com/v1/latest"
 USD_INR_API = "https://api.exchangerate.host/latest"
 
 def get_gold_usd_oz(api_key):
-    """Fetches the real-time gold price from an API."""
-    params = {'api_key': api_key, 'base': 'XAU', 'currencies': 'USD'}
+    """Fetches the real-time gold price from MetalpriceAPI."""
+    params = {'api_key': api_key, 'base': 'USD', 'currencies': 'XAU'}
     try:
-        resp = requests.get(GOLD_API_KEY, params=params)
-        resp.raise_for_status()  # Raise an exception for bad status codes
+        resp = requests.get(GOLD_API_URL, params=params)
+        resp.raise_for_status()
         data = resp.json()
-        return data['rates']['USD']
-    except requests.exceptions.RequestException as e:
-        print(f"Error fetching gold price: {e}")
+        return data['rates']['XAU']
+    except (requests.exceptions.RequestException, KeyError, TypeError) as e:
+        print(f"Error fetching gold price or parsing data: {e}")
+        print("API response:", data)  # Print the full response to debug
         return None
 
 def get_usd_inr_rate():
@@ -46,10 +46,9 @@ def compute_landed_price(usd_oz, usd_inr):
 
 def run_and_update(gold_api_key):
     """Runs the main logic to fetch data, compute the price, and update the CSV."""
-    usd_oz = get_gold_usd_oz(GOLD_API_KEY)
+    usd_oz = get_gold_usd_oz(gold_api_key)
     usd_inr = get_usd_inr_rate()
 
-    # If either API call failed, we stop here.
     if usd_oz is None or usd_inr is None:
         print("Skipping CSV update due to failed API calls.")
         return
@@ -57,14 +56,15 @@ def run_and_update(gold_api_key):
     landed_price = compute_landed_price(usd_oz, usd_inr)
     status = "BUY" if TARGET_LOW <= landed_price <= TARGET_HIGH else "WAIT"
 
+    current_time_utc = datetime.now(timezone.utc)
+    
     row = {
-        "Date": datetime.current_time_utc.strftime("%Y-%m-%d %H:%M:%S"),
+        "Date": current_time_utc.strftime("%Y-%m-%d %H:%M:%S"),
         "Gold USD/oz": round(usd_oz, 2),
         "USD/INR": round(usd_inr, 2),
         "Landed INR/10g": round(landed_price, 2),
         "Status": status
     }
-
 
     if os.path.exists(CSV_PATH):
         df = pd.read_csv(CSV_PATH)
@@ -76,7 +76,6 @@ def run_and_update(gold_api_key):
     print("Watchlist updated:", row)
 
 if __name__ == "__main__":
-    # Ensure a command-line argument for the API key is provided
     if len(sys.argv) < 2:
         print("Error: The gold API key is required as a command-line argument.")
         sys.exit(1)

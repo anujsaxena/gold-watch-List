@@ -12,16 +12,15 @@ GRAMS_PER_OZ = 31.1034768
 CSV_PATH = "gold_watchlist.csv"
 
 # API Endpoints
-# Note: The API URLs are now hardcoded and not expected as arguments.
 GOLD_API_URL = "https://api.metalpriceapi.com/v1/latest"
-USD_INR_API = "https://api.apilayer.com/exchangerates_data/latest"
+USD_INR_API = "https://api.exchangerate.host/live"
 
 def get_gold_usd_oz(api_key):
     """Fetches the real-time gold price from an API."""
     params = {'api_key': api_key, 'base': 'USD', 'currencies': 'XAU'}
     try:
         resp = requests.get(GOLD_API_URL, params=params)
-        resp.raise_for_status()
+        resp.raise_for_status()  # Raise an exception for bad status codes
         data = resp.json()
         return data['rates']['XAU']
     except requests.exceptions.RequestException as e:
@@ -32,20 +31,21 @@ def get_gold_usd_oz(api_key):
         print("API response:", data)
         return None
 
-def get_usd_inr_rate(api_key):
+def get_usd_inr_rate(access_key):
     """Fetches the real-time USD to INR exchange rate."""
-    headers = {"apikey": api_key}
-    params = {'base': 'USD', 'symbols': 'INR'}
+    params = {'access_key': access_key, 'currencies': 'INR', 'source': 'USD'}
     try:
-        resp = requests.get(USD_INR_API, headers=headers, params=params)
+        resp = requests.get(USD_INR_API, params=params)
         resp.raise_for_status()
         data = resp.json()
-        return data["rates"]["INR"]
+        # The key for INR is now USDINR based on the documentation
+        return data["quotes"]["USDINR"]
     except requests.exceptions.RequestException as e:
         print(f"Error fetching USD/INR rate: {e}")
         return None
     except KeyError:
-        print("API response does not contain the expected 'rates' or 'INR' key.")
+        print("API response does not contain the expected 'quotes' or 'USDINR' key.")
+        print("API response:", data)
         return None
 
 def compute_landed_price(usd_oz, usd_inr):

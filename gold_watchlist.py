@@ -24,12 +24,13 @@ def get_gold_usd_oz(api_key):
         print(f"Gold API Response: {resp.text}")
         resp.raise_for_status()
         data = resp.json()
-        return data['rates']['XAU']
+        # Corrected: Accessing the gold price using 'USDXAU'
+        return data['rates']['USDXAU']
     except requests.exceptions.RequestException as e:
         print(f"Error fetching gold price: {e}")
         return None
     except KeyError:
-        print("API response does not contain the expected 'rates' or 'XAU' key.")
+        print("API response does not contain the expected 'rates' or 'USDXAU' key.")
         print("API response:", data)
         return None
 

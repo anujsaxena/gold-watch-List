@@ -13,7 +13,7 @@ CSV_PATH = "gold_watchlist.csv"
 
 # API Endpoints
 # Note: These API URLs require an API key to work correctly.
-GOLD_API_URL = "https://api.metalpriceapi.com/v1/latest"
+GOLD_API_KEY = "https://api.metalpriceapi.com/v1/latest"
 USD_INR_API = "https://api.exchangerate.host/latest"
 
 def get_gold_usd_oz(api_key):
@@ -21,7 +21,7 @@ def get_gold_usd_oz(api_key):
     # The 'base' currency is USD, and the 'currency' requested is XAU (gold)
     params = {'api_key': api_key, 'base': 'USD', 'currencies': 'XAU'}
     try:
-        resp = requests.get(GOLD_API_URL, params=params)
+        resp = requests.get(GOLD_API_KEY, params=params)
         resp.raise_for_status()  # Raise an exception for bad status codes
         data = resp.json()
         

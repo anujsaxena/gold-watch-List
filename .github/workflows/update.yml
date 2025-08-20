@@ -26,8 +26,7 @@ jobs:
           pip install pandas requests
 
       - name: Run script
-        run: python gold_watchlist.py
-
+        run: python gold_watchlist.py ${{ secrets.GOLD_API_KEY }} ${{ secrets.USD_INR_API }}
       - name: Commit and push changes
         run: |
           git config --global user.name "GitHub Actions"

@@ -2,7 +2,7 @@ name: Update Gold Watchlist
 
 on:
   schedule:
-    - cron: "0 3 * * *"   # Runs daily at 08:30 AM IST (03:00 UTC)
+    - cron: "30 9 * * *"   # Runs daily at 08:30 AM IST (03:00 UTC)
   workflow_dispatch:      # Allows you to run it manually too
 
 permissions:
